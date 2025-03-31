@@ -6,7 +6,7 @@ from src.models.company import Company
 class FileHandler:
     """檔案處理工具類"""
     @staticmethod
-    def read_company_list(file_path='data/input/company_list2.xlsx'):
+    def read_company_list(file_path='data/input/company_list.xlsx'):
         """從Excel檔案讀取公司列表"""
         try:
             df = pd.read_excel(file_path)

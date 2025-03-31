@@ -26,7 +26,7 @@ pip install -r requirements.txt
 ## 使用方法
 
 1. 準備輸入檔案：
-   - 在 `data/input` 目錄下放置 `company_list2.xlsx` 檔案
+   - 在 `data/input` 目錄下放置 `company_list.xlsx` 檔案
    - Excel 檔案格式說明：
      - 需包含「公司名稱」和「公司代號」兩個欄位
 
