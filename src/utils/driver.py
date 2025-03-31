@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+import platform
 
 class WebDriver:
     """瀏覽器驅動工具類"""
@@ -21,8 +22,15 @@ class WebDriver:
         chrome_options.add_argument('--ignore-certificate-errors')
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36')
         
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+        # 檢查是否為 Mac ARM64 架構
+        if platform.system() == 'Darwin' and platform.machine() == 'arm64':
+            # 使用特定版本的 ChromeDriver
+            service = Service()
+            driver = webdriver.Chrome(options=chrome_options)
+        else:
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+            
         return driver
 
     @staticmethod

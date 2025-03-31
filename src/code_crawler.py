@@ -9,6 +9,7 @@ from loguru import logger
 import pandas as pd
 import time
 import os
+import platform
 
 class CompanyCodeCrawler:
     def __init__(self):
@@ -24,22 +25,32 @@ class CompanyCodeCrawler:
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         
-        service = Service(ChromeDriverManager().install())
-        self.driver = webdriver.Chrome(service=service, options=chrome_options)
+        # 檢查是否為 Mac ARM64 架構
+        if platform.system() == 'Darwin' and platform.machine() == 'arm64':
+            chrome_options.add_argument('--disable-gpu')
+            service = Service()
+            self.driver = webdriver.Chrome(options=chrome_options)
+        else:
+            service = Service(ChromeDriverManager().install())
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+            
         self.wait = WebDriverWait(self.driver, 10)
 
     def read_company_list(self):
         """從Excel檔案讀取公司列表"""
         try:
-            df = pd.read_excel('company_list.xlsx')
+            input_path = os.path.join('data', 'input', 'company_list.xlsx')
+            df = pd.read_excel(input_path)
             companies = df['公司名稱'].tolist()
             logger.info(f"成功讀取了 {len(companies)} 家公司的名稱")
             return companies
         except FileNotFoundError:
-            logger.error("找不到company_list.xlsx檔案，將創建新檔案")
+            logger.error("找不到data/input/company_list.xlsx檔案，將創建新檔案")
+            # 確保data/input目錄存在
+            os.makedirs(os.path.join('data', 'input'), exist_ok=True)
             # 如果檔案不存在，創建一個空的DataFrame並保存
             df = pd.DataFrame({'公司名稱': []})
-            df.to_excel('company_list.xlsx', index=False)
+            df.to_excel(input_path, index=False)
             return []
         except Exception as e:
             logger.error(f"讀取公司列表時出錯: {str(e)}")
@@ -92,8 +103,9 @@ class CompanyCodeCrawler:
             
             # 保存結果
             df = pd.DataFrame(results)
-            df.to_excel('company_list.xlsx', index=False)
-            logger.info("已將公司代碼保存到company_list.xlsx")
+            output_path = os.path.join('data', 'input', 'company_list.xlsx')
+            df.to_excel(output_path, index=False)
+            logger.info("已將公司代碼保存到data/input/company_list.xlsx")
             
         except Exception as e:
             logger.error(f"爬取過程中出錯: {str(e)}")
@@ -101,8 +113,8 @@ class CompanyCodeCrawler:
             self.driver.quit()
 
 if __name__ == "__main__":
-    # 確保data目錄存在
-    os.makedirs('data', exist_ok=True)
+    # 確保data/input目錄存在
+    os.makedirs(os.path.join('data', 'input'), exist_ok=True)
     
     # 開始爬取
     crawler = CompanyCodeCrawler()
